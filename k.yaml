@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: denyenv
+  name: denyenv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: denyenv
+  template:
+    metadata:
+      labels:
+        app: denyenv
+    spec:
+      containers:
+        - image: zengxu/denyenv-validating-admission-webhook:v0
+          env:
+            - name: CERT_DIR
+              value: "/etc/denyenv-webhook/certs"
+          name: denyenv
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/denyenv-webhook/certs/
+              name: tls-cert
+      volumes:
+        - name: tls-cert
+          secret:
+            secretName: denyenv-tls-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: denyenv
+  name: denyenv
+spec:
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8000
+  selector:
+    app: denyenv
+  type: ClusterIP
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: denyenv
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      caBundle: ""
+      service:
+        name: denyenv
+        namespace: default
+        port: 443
+        path: /validate
+    failurePolicy: Fail
+    matchPolicy: Exact
+    name: denyenv.zeng.dev
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods
+        scope: '*'
+    objectSelector:
+      matchExpressions:
+        - key: app
+          operator: NotIn
+          values:
+            - denyenv
+    sideEffects: NoneOnDryRun
+    timeoutSeconds: 30
