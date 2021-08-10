@@ -82,5 +82,5 @@ webhooks:
           operator: NotIn
           values:
             - denyenv
-    sideEffects: NoneOnDryRun
-    timeoutSeconds: 30
+    sideEffects: None
+    timeoutSeconds: 3
