@@ -22,7 +22,7 @@ clear:
 
 deploy-cm: SHELL:=/bin/bash
 deploy-cm:
-    # ./cert-manager-1.5.3.yaml is ported from https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+	# ./cert-manager-1.5.3.yaml was ported from https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
 	kubectl apply -f ./cert-manager-1.5.3.yaml
 	# loop until cert-manager pod ready
 	for i in {1..30}; do kubectl apply -f ./k-cert-manager.yaml; if [ $$? -eq 0 ]; then break; else sleep 6; fi; done;
