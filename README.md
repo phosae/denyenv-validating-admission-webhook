@@ -7,15 +7,20 @@ I rewrite it as Go HTTP server, change the gcloud function deployment way to Kub
 
 As Kubernetes apiServer only accept webhooks in HTTPS, I use openssl to generate server CertSignRequest and private key, then leverage Kubernetes CertificateSigningRequest to sign our server certificate.
 
+As [cert-manager](https://github.com/jetstack/cert-manager) is also a popular choice for TLS certificate management, I also offer a cert-manager version for deployment.
+
 ##  Write, Deploy and Test
 
 You can change the code in main.go, or add some go codes, to accomplish you custom needs.
 
 To deploy and test server in Kubernetes, [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) is a good choice.
 Use `make linux && make load` to build Docker image and load it to Kind cluster, use `make deploy` to apply all Yaml manifest to Kind cluster.
-Finally, user `make clear` to do clearing job.
+Finally, use `make clear` to do clearing job.
 
 As the image of this server have being push to my docker public repository, you can apply `make deploy` to any Kubernetes cluster, Feeling the magic in several minutes.
+
+If you prefer to use cert-manager for  TLS certificate management,  use `make deploy-cm` to apply all Yaml manifest to Kind cluster,
+use `make clear-cm` to clear.
 
 ## some other place help you learn Kubernetes Admission Webhooks
 
