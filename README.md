@@ -22,6 +22,14 @@ As the image of this server have being push to my docker public repository, you 
 If you prefer to use cert-manager for  TLS certificate management,  use `make deploy-cm` to apply all Yaml manifest to Kind cluster,
 use `make clear-cm` to clear.
 
+## local debug or out cluster deploy
+If your want to set up server out of cluster, for testing/debug, or other purpose, specific your machine ip address in `webhook-create-signed-cert.sh`(kube-signed-cert), or `k-cert-manager.yaml`(cert-manager).
+
+For kube-signed-cert, use `make setup-kube-for-outcluster` to set up kubernetes environment, use `make clear-kube-for-outcluster` to clear.
+For cert-manager way, use `make setup-kube-for-outcluster-cm` to set up kubernetes environment, use `make clear-kube-for-outcluster-cm` to clear.
+
+Most importantly, use `make save-cert` to get the TLS cert/key, put it in some directory your want, finally start the server with CERT_DIR environment variable. 
+
 ## some other place help you learn Kubernetes Admission Webhooks
 
 - [Official Docs](https://kind.sigs.k8s.io/docs/user/quick-start/) really helps.
