@@ -1,15 +1,12 @@
-TAG = zengxu/denyenv-validating-admission-webhook:v0
+TAG = zengxu/denyenv-validating-admission-webhook:v1
 
-linux:
-	GOARCH=amd64 GOOS=linux go build -o ./bin/denyenv-validating-admission-webhook
-	docker image rm $(TAG)
-	docker build -t $(TAG) .
-
-load:
+build-load:
+	docker buildx build --load -t $(TAG) .
 	kind load docker-image $(TAG)
 
 cert:
-	./webhook-create-signed-cert.sh --service denyenv --namespace default --secret denyenv-tls-secret
+	./hack/gencert.sh
+	sh ./create-csr-cert.sh --service denyenv --namespace default --secret denyenv-tls-secret
 
 deploy:
 	sh ./set-kube-ca.sh &
@@ -38,16 +35,13 @@ save-cert:
 	kubectl get secret denyenv-tls-secret -o jsonpath={.data.'tls\.crt'} | base64 -d > tls.crt
 	kubectl get secret denyenv-tls-secret -o jsonpath={.data.'tls\.key'} | base64 -d > tls.key
 
-setup-kube-for-outcluster:
-	make cert
-	kubectl apply -f ./outcluster-webhook-configuration.yaml
-	sh ./set-kube-ca-v1.20+.sh
-	make save-cert
+install-outcluster:
+	./hack/gencert.sh
+	@CA=$$(cat ./tls.crt | base64) && \
+	sed -e "s/{{.LOCALIP}}/$$LOCALIP/g" -e "s/{{.CA}}/$$CA/g" ./outcluster-webhook-configuration.yaml | kubectl apply -f -
 
-clear-kube-for-outcluster:
-	kubectl delete secret denyenv-tls-secret
+clear-outcluster:
 	kubectl delete -f ./outcluster-webhook-configuration.yaml
-	kubectl delete CertificateSigningRequest denyenv.default
 
 setup-kube-for-outcluster-cm: SHELL:=/bin/bash
 setup-kube-for-outcluster-cm:

@@ -1,19 +1,21 @@
 # Write, Deploy and Test Kubernetes Validating Admission Webhooks
 
-Most of the code in main.go was porting from Kelsey's [denyenv](https://github.com/kelseyhightower/denyenv-validating-admission-webhook).
-Kelsey's idea is wonderful to demonstrate how admission webhooks in kubernetes: If the new coming Pod contains any ENV variable, deny it and return error message, otherwise accept it.
+Most of the code in main.go was porting from Kelsey's [denyenv](https://github.com/kelseyhightower/denyenv-validating-admission-webhook) repository.
+Kelsey's idea is a fantastic way to demonstrate how Admission Webhook works in Kubernetes: If a new Pod contains any ENV variable, it is denied, and an error message is returned. Otherwise, it is accepted.
 
-I rewrite it as Go HTTP server, change the gcloud function deployment way to Kubernetes Deployment and Service.
+I've rewrote the HTTP server in Go and  transitioned the deployment method from a Google Cloud Platform function to a Kubernetes Deployment and Service.
 
-As Kubernetes apiServer only accept webhooks in HTTPS, I use openssl to generate server CertSignRequest and private key, then leverage Kubernetes CertificateSigningRequest to sign our server certificate.
+Since the Kubernetes apiServer only accepts HTTPS webhooks, I utilized OpenSSL to generate a server CertSignRequest and private key. Subsequently, I used the Kubernetes CertificateSigningRequest feature to sign our server certificate.
 
-As [cert-manager](https://github.com/jetstack/cert-manager) is also a popular choice for TLS certificate management, I also offer a cert-manager version for deployment.
+As [cert-manager](https://github.com/jetstack/cert-manager) is popular for TLS certificate management in Kubernetes, I have also provided a cert-manager version for deployment.
+
+Additionally, for those interested in local debugging, a method for generating a TLS certificate for your local machine is available.
 
 ##  Write, Deploy and Test
 
-You can change the code in main.go, or add some go codes, to accomplish you custom needs.
+You can modify the code in main.go, or add additional go codes to meet your custom needs.
 
-To deploy and test server in Kubernetes, [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) is a good choice.
+For deploying and testing the server in a Kubernetes environment, [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) is an excellent choice.
 
 ```bash
 kind create cluster --config -<<EOF
@@ -21,33 +23,35 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   - role: control-plane
-    image: kindest/node:v1.21.14
+    image: kindest/node:v1.26.3
   - role: worker
-    image: kindest/node:v1.21.14
+    image: kindest/node:v1.26.3
+  - role: worker
+    image: kindest/node:v1.26.3
 networking:
   podSubnet: "10.244.0.0/16"
   serviceSubnet: "10.96.0.0/12"
 EOF
 ```
-note: currently, our scripts don't support K8s 1.22 or 1.22+.
 
 Quick Start:
-- `make linux && make load`: build Docker image and load it to Kind cluster
+- `make build-load`: build Docker image and load it to Kind cluster
 - `make deploy`: apply all Yaml manifest (webhook server Deployment/Service, and the ValidatingWebhookConfiguration) to Kind cluster.
-- `make clear`: do clearing job.
+- `make clear`: clear manifests
 
-As the image of this server have being push to my docker public repository, you can apply `make deploy` to any Kubernetes cluster, Feeling the magic in several minutes.
+Since the server's image has been pushed to my public Docker repository, you can apply the `make deploy` command to any Kubernetes cluster and experience the magic in just a few seconds.
 
-If you prefer to use cert-manager for  TLS certificate management,  use `make deploy-cm` to apply all Yaml manifest to Kind cluster,
-use `make clear-cm` to clear.
+If you prefer to use cert-manager for TLS certificate management, you can use the `make deploy-cm` command to apply all the necessary YAML manifests to the Kind cluster. You can also use the `make clear-cm` command to clear them.
 
 ## local debug or out cluster deploy
-If your want to set up server out of cluster, for testing/debug, or other purpose, specific your machine ip address in `webhook-create-signed-cert.sh`(kube-signed-cert), or `k-cert-manager.yaml`(cert-manager).
+If your want to set up the server out of cluster, for testing, debugging, or other purposes, just
 
-For kube-signed-cert, use `make setup-kube-for-outcluster` to set up kubernetes environment, use `make clear-kube-for-outcluster` to clear.
-For cert-manager way, use `make setup-kube-for-outcluster-cm` to set up kubernetes environment, use `make clear-kube-for-outcluster-cm` to clear.
+```bash
+LOCALIP=100.100.32.64 make install-outcluster && CERT_DIR=. go run main.go
+```
+Please note that you should replace `100.100.32.64` with the IP address of your machine that is reachable from the K8s Cluster(usualy eth0, en0...)
 
-Most importantly, use `make save-cert` to get the TLS cert/key, put it in some directory your want, finally start the server with CERT_DIR environment variable. 
+Also, If you prefer to use cert-manager for TLS certificate management, use make deploy-cm to apply all Yaml manifest to Kind cluster, use make clear-cm to clear.
 
 ## some other place help you learn Kubernetes Admission Webhooks
 

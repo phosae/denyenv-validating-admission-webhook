@@ -3,33 +3,36 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: denyenv
-  annotations:
-    cert-manager.io/inject-ca-from: default/denyenv-tls-secret
 webhooks:
-  - admissionReviewVersions:
-      - v1
-    clientConfig:
-      caBundle: ""
-      # change the ipaddress to your machine ipaddress
-      url: 'https://192.168.1.10:8000/validate'
-    failurePolicy: Fail
-    matchPolicy: Exact
-    name: denyenv.zeng.dev
-    rules:
-      - apiGroups:
-          - ""
-        apiVersions:
-          - v1
-        operations:
-          - CREATE
-        resources:
-          - pods
-        scope: '*'
-    objectSelector:
-      matchExpressions:
-        - key: app
-          operator: NotIn
-          values:
-            - denyenv
-    sideEffects: None
-    timeoutSeconds: 3
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: "{{.CA}}"
+    # change the ipaddress to your machine ipaddress
+    url: https://{{.LOCALIP}}:8000/validate
+  failurePolicy: Fail
+  matchPolicy: Exact
+  name: denyenv.zeng.dev
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+    scope: '*'
+  objectSelector:
+    matchExpressions:
+    - key: app
+      operator: NotIn
+      values:
+      - denyenv
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["default", "test"]
+  sideEffects: None
+  timeoutSeconds: 3

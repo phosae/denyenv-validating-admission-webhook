@@ -2,3 +2,6 @@
 /bin
 tls.crt
 tls.key
+denyenv-cert.csr
+denyenv-cert.pem
+/vendor

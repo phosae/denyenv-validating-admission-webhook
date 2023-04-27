@@ -24,8 +24,10 @@ func main() {
 	if certDir := os.Getenv("CERT_DIR"); certDir != "" {
 		certFile := filepath.Join(certDir, tlsCertName)
 		keyFile := filepath.Join(certDir, tlsKeyName)
+		log.Println("serving https on 0.0.0.0:8000")
 		log.Fatal(http.ListenAndServeTLS(":8000", certFile, keyFile, mux))
 	} else {
+		log.Println("serving http on 0.0.0.0:8000")
 		log.Fatal(http.ListenAndServe(":8000", mux))
 	}
 }

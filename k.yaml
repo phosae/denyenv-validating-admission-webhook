@@ -15,7 +15,7 @@ spec:
         app: denyenv
     spec:
       containers:
-        - image: zengxu/denyenv-validating-admission-webhook:v0
+        - image: zengxu/denyenv-validating-admission-webhook:v1
           env:
             - name: CERT_DIR
               value: "/etc/denyenv-webhook/certs"
@@ -84,5 +84,10 @@ webhooks:
           operator: NotIn
           values:
             - denyenv
+    namespaceSelector:
+      matchExpressions:
+      - key: kubernetes.io/metadata.name
+        operator: In
+        values: ["default", "test"]
     sideEffects: None
     timeoutSeconds: 3
