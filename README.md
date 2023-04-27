@@ -14,8 +14,27 @@ As [cert-manager](https://github.com/jetstack/cert-manager) is also a popular ch
 You can change the code in main.go, or add some go codes, to accomplish you custom needs.
 
 To deploy and test server in Kubernetes, [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) is a good choice.
-Use `make linux && make load` to build Docker image and load it to Kind cluster, use `make deploy` to apply all Yaml manifest to Kind cluster.
-Finally, use `make clear` to do clearing job.
+
+```bash
+kind create cluster --config -<<EOF
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.21.14
+  - role: worker
+    image: kindest/node:v1.21.14
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+EOF
+```
+note: currently, our scripts don't support K8s 1.22 or 1.22+.
+
+Quick Start:
+- `make linux && make load`: build Docker image and load it to Kind cluster
+- `make deploy`: apply all Yaml manifest (webhook server Deployment/Service, and the ValidatingWebhookConfiguration) to Kind cluster.
+- `make clear`: do clearing job.
 
 As the image of this server have being push to my docker public repository, you can apply `make deploy` to any Kubernetes cluster, Feeling the magic in several minutes.
 

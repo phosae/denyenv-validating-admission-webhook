@@ -9,7 +9,7 @@ load:
 	kind load docker-image $(TAG)
 
 cert:
-	sh ./webhook-create-signed-cert.sh --service denyenv --namespace default --secret denyenv-tls-secret
+	./webhook-create-signed-cert.sh --service denyenv --namespace default --secret denyenv-tls-secret
 
 deploy:
 	sh ./set-kube-ca.sh &
