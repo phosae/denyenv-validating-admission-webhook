@@ -11,6 +11,16 @@ As [cert-manager](https://github.com/jetstack/cert-manager) is popular for TLS c
 
 Additionally, for those interested in local debugging, a method for generating a TLS certificate for your local machine is available.
 
+## Installing tools
+You must install [CFSSL](https://github.com/cloudflare/cfssl) for signing CA and issuing a certificate.
+
+```bash
+# golang 1.18+ way
+go install github.com/cloudflare/cfssl/cmd/...@latest
+
+# Ubuntu
+sudo apt-get install -y golang-cfssl
+```
 ##  Write, Deploy and Test
 
 You can modify the code in main.go, or add additional go codes to meet your custom needs.

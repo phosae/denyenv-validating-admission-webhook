@@ -82,7 +82,7 @@ IP.1 = 192.168.1.10  # change it to your IP address
 EOF
 
 openssl genrsa -out ${tmpdir}/server-tls.key 2048
-openssl req -new -key ${tmpdir}/server-tls.key -subj "/CN=system:node:fake" -out ${tmpdir}/server.csr -config ${tmpdir}/csr.conf
+openssl req -new -key ${tmpdir}/server-tls.key -subj "/CN=${service}.${namespace}.svc" -out ${tmpdir}/server.csr -config ${tmpdir}/csr.conf
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 kubectl delete csr ${csrName} 2>/dev/null || true
@@ -116,7 +116,7 @@ kubectl certificate approve ${csrName}
 
 # use self signed CA to issue a certificate for CertificateSigningRequest
 kubectl get csr denyenv.default -o jsonpath='{.spec.request}' | base64 --decode | \
-  cfssl sign -ca tls.crt -ca-key tls.key -config server-signing-config.json - | \
+  cfssl sign -ca tls.crt -ca-key tls.key -config $(dirname "${BASH_SOURCE[0]}")/server-signing-config.json - | \
   cfssljson -bare denyenv-cert
 
 # set status.certificate in certificate
