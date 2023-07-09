@@ -4,14 +4,19 @@ build-load:
 	docker buildx build --load -t $(TAG) .
 	kind load docker-image $(TAG)
 
+ensure-image: 
+ifeq ([], $(shell docker inspect --type=image $(TAG)))
+	make build-load
+endif
+
 cert:
 	./hack/gencert.sh
 	./hack/create-csr-cert.sh --service denyenv --namespace default --secret denyenv-tls-secret
 
-deploy:
-	./hack/set-kube-ca.sh &
+deploy: ensure-image
 	make cert
 	kubectl apply -f ./manifests/k.yaml
+	./hack/set-kube-ca.sh
 
 clear:
 	kubectl delete secret denyenv-tls-secret
@@ -19,7 +24,7 @@ clear:
 	kubectl delete CertificateSigningRequest denyenv.default
 
 deploy-cm: SHELL:=/bin/bash
-deploy-cm:
+deploy-cm: ensure-image
 	# ./manifests/cert-manager-1.5.3.yaml was ported from https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
 	kubectl apply -f ./manifests/cert-manager-1.5.3.yaml
 	# loop until cert-manager pod ready
