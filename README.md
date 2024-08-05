@@ -59,9 +59,9 @@ If your want to set up the server out of cluster, for testing, debugging, or oth
 ```bash
 LOCALIP=100.100.32.64 make install-outcluster && CERT_DIR=. go run main.go
 ```
-Please note that you should replace `100.100.32.64` with the IP address of your machine that is reachable from the K8s Cluster(usualy eth0, en0...)
+Please note that you should replace `100.100.32.64` with the IP address of your machine that is reachable from the K8s Cluster(usually eth0, en0...)
 
-Also, If you prefer to use cert-manager for TLS certificate management, use make deploy-cm to apply all Yaml manifest to Kind cluster, use make clear-cm to clear.
+Also, If you prefer to use cert-manager for TLS certificate management, use `make deploy-cm` to apply all Yaml manifest to Kind cluster, use `make clear-cm` to do cleanup.
 
 ## some other place help you learn Kubernetes Admission Webhooks
 
